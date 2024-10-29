@@ -1,0 +1,45 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity controlAgua is
+    Port ( clk : in STD_LOGIC;
+           echo : in STD_LOGIC;
+           trigger : out STD_LOGIC;
+           sensor_output : out STD_LOGIC);
+end controlAgua;
+
+architecture arch_controlAgua of controlAgua is
+    -- Declaración del componente
+    component sensor_ultrasonico
+        generic (
+            DISTANCIA_1 : INTEGER := 50;
+            DISTANCIA_2 : INTEGER := 100
+        );
+        Port ( clk : in STD_LOGIC;
+               echo : in STD_LOGIC;
+               trigger : out STD_LOGIC;
+               salida : out STD_LOGIC);
+    end component;
+
+    -- Señal interna para conectar la salida del sensor
+    signal sensor_salida : STD_LOGIC;
+begin
+    -- Instancia del sensor ultrasónico con distancias personalizadas
+    sensor_inst : sensor_ultrasonico
+        generic map (
+            DISTANCIA_1 => 20,  -- 2 cm   llenar agua
+            DISTANCIA_2 => 100  -- 10 cm	vaciar agua
+        )
+        Port map (
+            clk => clk,
+            echo => echo,
+            trigger => trigger,
+            salida => sensor_salida
+        );
+
+    -- Asignación de la salida del sensor a la salida del módulo
+    sensor_output <= sensor_salida;
+
+end arch_controlAgua;
