@@ -12,7 +12,7 @@ entity lavadora is
       start : in std_logic;
       stop : in std_logic;
       pause : in std_logic;
-      buzzer : out std_logic
+      buzzer : buffer std_logic
    );
 end lavadora;
 
