@@ -1,45 +1,52 @@
-library ieee;
-use ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
-
+-- sensor_ultrasonico.vhd
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity controlTapa is
+    generic (
+        DISTANCIA_1 : INTEGER := 80;  -- 8cm Valor por defecto
+        DISTANCIA_2 : INTEGER := 150  -- 15cm Valor por defecto
+    );
     Port ( clk : in STD_LOGIC;
            echo : in STD_LOGIC;
            trigger : out STD_LOGIC;
-           sensor_output : out STD_LOGIC);
+           salida : out STD_LOGIC);
 end controlTapa;
 
-
 architecture arch_controlTapa of controlTapa is
-
-component sensor_ultrasonico
-        generic (
-            DISTANCIA_1 : INTEGER := 50;
-            DISTANCIA_2 : INTEGER := 100
-        );
-        Port ( clk : in STD_LOGIC;
-               echo : in STD_LOGIC;
-               trigger : out STD_LOGIC;
-               salida : out STD_LOGIC);
-    end component;
-	
-	 signal sensor_salida : STD_LOGIC;
-	 
+    signal count : INTEGER := 0;
+    signal distancia : INTEGER := 0;
+    signal estado : STD_LOGIC := '0';
 begin
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if estado = '0' then
+                trigger <= '1';
+                count <= 0;
+                estado <= '1';
+            elsif estado = '1' then
+                trigger <= '0';
+                if echo = '1' then
+                    count <= count + 1;
+                else
+                    distancia <= count;
+                    estado <= '0';
+                end if;
+            end if;
+        end if;
+    end process;
 
-	sensor_inst : sensor_ultrasonico
-        generic map (
-            DISTANCIA_1 => 80,  -- 8 cm   lavar casual
-            DISTANCIA_2 => 150  -- 15 cm  detener lavado 
-        )
-        Port map (
-            clk => clk,
-            echo => echo1,
-				 trigger => trigger1,
-            salida => salida1
-        );
-		  
-	sensor_output <= sensor_salida; 		
-		
+    process(distancia)
+    begin
+        if distancia = DISTANCIA_1 then
+            salida <= '1';
+       elsif distancia = DISTANCIA_2 then
+            salida <= '0';
+        else
+            salida <= '0';
+        end if;
+    end process;
 end arch_controlTapa;
