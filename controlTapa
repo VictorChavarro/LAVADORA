@@ -1,0 +1,45 @@
+library ieee;
+use ieee.std_logic_1164.all;
+USE ieee.numeric_std.all;
+
+
+entity controlTapa is
+    Port ( clk : in STD_LOGIC;
+           echo : in STD_LOGIC;
+           trigger : out STD_LOGIC;
+           sensor_output : out STD_LOGIC);
+end controlTapa;
+
+
+architecture arch_controlTapa of controlTapa is
+
+component sensor_ultrasonico
+        generic (
+            DISTANCIA_1 : INTEGER := 50;
+            DISTANCIA_2 : INTEGER := 100
+        );
+        Port ( clk : in STD_LOGIC;
+               echo : in STD_LOGIC;
+               trigger : out STD_LOGIC;
+               salida : out STD_LOGIC);
+    end component;
+	
+	 signal sensor_salida : STD_LOGIC;
+	 
+begin
+
+	sensor_inst : sensor_ultrasonico
+        generic map (
+            DISTANCIA_1 => 80,  -- 8 cm   lavar casual
+            DISTANCIA_2 => 150  -- 15 cm  detener lavado 
+        )
+        Port map (
+            clk => clk,
+            echo => echo1,
+				 trigger => trigger1,
+            salida => salida1
+        );
+		  
+	sensor_output <= sensor_salida; 		
+		
+end arch_controlTapa;
