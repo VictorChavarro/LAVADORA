@@ -1,0 +1,52 @@
+-- sensor_ultrasonico.vhd
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity sensor_ultrasonico is
+    generic (
+        DISTANCIA_1 : INTEGER := 50;  -- Valor por defecto
+        DISTANCIA_2 : INTEGER := 100  -- Valor por defecto
+    );
+    Port ( clk : in STD_LOGIC;
+           echo : in STD_LOGIC;
+           trigger : out STD_LOGIC;
+           salida : out STD_LOGIC);
+end sensor_ultrasonico;
+
+architecture arch_sensor_ultrasonico of sensor_ultrasonico is
+    signal count : INTEGER := 0;
+    signal distancia : INTEGER := 0;
+    signal estado : STD_LOGIC := '0';
+begin
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if estado = '0' then
+                trigger <= '1';
+                count <= 0;
+                estado <= '1';
+            elsif estado = '1' then
+                trigger <= '0';
+                if echo = '1' then
+                    count <= count + 1;
+                else
+                    distancia <= count;
+                    estado <= '0';
+                end if;
+            end if;
+        end if;
+    end process;
+
+    process(distancia)
+    begin
+        if distancia = DISTANCIA_1 then
+            salida <= '1';
+       elsif distancia = DISTANCIA_2 then
+            salida <= '0';
+        else
+            salida <= '0';
+        end if;
+    end process;
+end arch_sensor_ultrasonico;
