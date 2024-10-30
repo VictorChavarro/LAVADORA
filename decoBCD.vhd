@@ -1,90 +1,27 @@
-library ieee;
-use ieee.std_logic_1164.all;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 
 entity decoBCD is
-
-	port
-	(
-		-- Input ports
-		A, B, C, D	: in  std_logic;
-
-		-- Output ports
-		sa, sb, sc, sd, se, sf, sg	: out std_logic
-	);
+    Port ( bcd_in : in STD_LOGIC_VECTOR(3 downto 0);
+           seg_out : out STD_LOGIC_VECTOR(6 downto 0));
 end decoBCD;
 
-
-
 architecture arch_decoBCD of decoBCD is
-
-	-- Declarations (optional)
-	
-
 begin
-
-	-- Process Statement (optional)
-	sa <= '0' when (A='0' and B='0' and C='0' and D='0') else
-			'0' when (A='0' and B='0' and C='1' and D='0') else
-			'0' when (A='0' and B='0' and C='1' and D='1') else
-			'0' when (A='0' and B='1' and C='0' and D='1') else
-			'0' when (A='0' and B='1' and C='1' and D='0') else
-			'0' when (A='0' and B='1' and C='1' and D='1') else
-			'0' when (A='1' and B='0' and C='0' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='1') else
-			'1';
-			
-	sb <= '0' when (A='0' and B='0' and C='0' and D='0') else
-			'0' when (A='0' and B='0' and C='0' and D='1') else
-			'0' when (A='0' and B='0' and C='1' and D='0') else
-			'0' when (A='0' and B='0' and C='1' and D='1') else
-			'0' when (A='0' and B='1' and C='0' and D='0') else
-			'0' when (A='0' and B='1' and C='1' and D='1') else
-			'0' when (A='1' and B='0' and C='0' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='1') else
-			'1';
-	
-	sc <= '0' when (A='0' and B='0' and C='0' and D='0') else
-			'0' when (A='0' and B='0' and C='0' and D='1') else
-			'0' when (A='0' and B='0' and C='1' and D='1') else
-			'0' when (A='0' and B='1' and C='0' and D='0') else
-			'0' when (A='0' and B='1' and C='0' and D='1') else
-			'0' when (A='0' and B='1' and C='1' and D='0') else
-			'0' when (A='0' and B='1' and C='1' and D='1') else
-			'0' when (A='1' and B='0' and C='0' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='1') else
-			'1';
-	
-	sd <= '0' when (A='0' and B='0' and C='0' and D='0') else
-			'0' when (A='0' and B='0' and C='1' and D='0') else
-			'0' when (A='0' and B='0' and C='1' and D='1') else
-			'0' when (A='0' and B='1' and C='0' and D='1') else
-			'0' when (A='0' and B='1' and C='1' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='0') else
-			'1';
-
-	se <= '0' when (A='0' and B='0' and C='0' and D='0') else
-			'0' when (A='0' and B='0' and C='1' and D='0') else
-			'0' when (A='0' and B='1' and C='1' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='0') else
-			'1';
-	
-	sf <= '0' when (A='0' and B='0' and C='0' and D='0') else
-			'0' when (A='0' and B='1' and C='0' and D='0') else
-			'0' when (A='0' and B='1' and C='0' and D='1') else
-			'0' when (A='0' and B='1' and C='1' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='1') else
-			'1';
-	
-	sg <= '0' when (A='0' and B='0' and C='1' and D='0') else
-			'0' when (A='0' and B='0' and C='1' and D='1') else
-			'0' when (A='0' and B='1' and C='0' and D='0') else
-			'0' when (A='0' and B='1' and C='0' and D='1') else
-			'0' when (A='0' and B='1' and C='1' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='0') else
-			'0' when (A='1' and B='0' and C='0' and D='1') else
-			'1';
-
-	
+    process(bcd_in)
+    begin
+        case bcd_in is
+            when "0000" => seg_out <= "1111110"; -- 0
+            when "0001" => seg_out <= "0110000"; -- 1
+            when "0010" => seg_out <= "1101101"; -- 2
+            when "0011" => seg_out <= "1111001"; -- 3
+            when "0100" => seg_out <= "0110011"; -- 4
+            when "0101" => seg_out <= "1011011"; -- 5
+            when "0110" => seg_out <= "1011111"; -- 6
+            when "0111" => seg_out <= "1110000"; -- 7
+            when "1000" => seg_out <= "1111111"; -- 8
+            when "1001" => seg_out <= "1111011"; -- 9
+            when others => seg_out <= "0000000"; -- Blank
+        end case;
+    end process;
 end arch_decoBCD;
-
