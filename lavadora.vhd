@@ -12,6 +12,8 @@ entity lavadora is
       start : in std_logic;
       stop : in std_logic;
       pause : in std_logic;
+      cnt_in : in unsigned(6 downto 0);
+      seg_out : out STD_LOGIC_VECTOR(6 downto 0));
       buzzer : buffer std_logic
    );
 end lavadora;
@@ -64,8 +66,49 @@ architecture arch_lavadora of lavadora is
          out2 : out std_logic
       );
    end component;
+-- Declaración del componente del contador
+    component contador
+        Port ( clock : in STD_LOGIC;
+               reset : in STD_LOGIC;
+               en : in STD_LOGIC;
+               load : in STD_LOGIC;
+               cnt_in : in unsigned(6 downto 0);
+               cnt : out unsigned(6 downto 0));
+    end component;
+
+    -- Declaración del componente del decodificador BCD
+    component decoBCD
+        Port ( bcd_in : in STD_LOGIC_VECTOR(3 downto 0);
+               seg_out : out STD_LOGIC_VECTOR(6 downto 0));
+    end component;
+
+    -- Señales internas
+    signal contador_salida : unsigned(6 downto 0);
+    signal bcd_input : STD_LOGIC_VECTOR(3 downto 0);
+      
     
 begin
+
+    -- Instancia del contador
+    contador_inst : contador Port map (
+            clock => clk,
+            reset => reset,
+            en => en,
+            load => load,
+            cnt_in => cnt_in,
+            cnt => contador_salida
+        );
+
+    -- Convertir la salida del contador a BCD (ejemplo simple)
+    bcd_input <= std_logic_vector(contador_salida(3 downto 0));
+
+    -- Instancia del decodificador BCD
+    deco_inst : decoBCD  Port map (
+            bcd_in => bcd_input,
+            seg_out => seg_out
+        );
+
+   
    -- Instancia de la FSM
    MaquinaEstados : FSM port map (clk, reset, start, stop, pause, data, address, llenado, lavado, vaciado, enjuague, centrifugado, done);
 
