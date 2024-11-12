@@ -12,16 +12,17 @@ entity lavadora is
       start : in std_logic;
       stop : in std_logic;
       pause : in std_logic;
-      cnt_in : in unsigned(6 downto 0);
-      seg_out : out STD_LOGIC_VECTOR(6 downto 0));
       buzzer : buffer std_logic
+		
+		display1	: out std_logic_vector(6 downto 0); --Decenas  
+      display2	: out std_logic_vector(6 downto 0)  --Unidades
    );
 end lavadora;
 
 architecture arch_lavadora of lavadora is
 
    -- SEÑALES INTERNAS
-   signal llenado, lavado, vaciado, enjuague, centrifugado, done : std_logic;	
+   signal Freq1, Freq2, enable, llenado, lavado, vaciado, enjuague, centrifugado, done : std_logic;	
    signal address : std_logic_vector(3 downto 0);
    signal data : std_logic_vector(7 downto 0);
     
@@ -66,53 +67,27 @@ architecture arch_lavadora of lavadora is
          out2 : out std_logic
       );
    end component;
--- Declaración del componente del contador
-    component contador
-        Port ( clock : in STD_LOGIC;
-               reset : in STD_LOGIC;
-               en : in STD_LOGIC;
-               load : in STD_LOGIC;
-               cnt_in : in unsigned(6 downto 0);
-               cnt : out unsigned(6 downto 0));
-    end component;
-
-    -- Declaración del componente del decodificador BCD
-    component decoBCD
-        Port ( bcd_in : in STD_LOGIC_VECTOR(3 downto 0);
-               seg_out : out STD_LOGIC_VECTOR(6 downto 0));
-    end component;
-
-    -- Señales internas
-    signal contador_salida : unsigned(6 downto 0);
-    signal bcd_input : STD_LOGIC_VECTOR(3 downto 0);
-      
+	
+	component contador
+		port(
+			clock, reset, en, load 	: in  std_logic;
+			cnt_in : in unsigned(6 downto 0);
+			cnt	: out unsigned (6 downto 0);			
+			decenas    : out std_logic_vector(6 downto 0);  
+			unidades    : out std_logic_vector(6 downto 0)
+		);
     
 begin
-
-    -- Instancia del contador
-    contador_inst : contador Port map (
-            clock => clk,
-            reset => reset,
-            en => en,
-            load => load,
-            cnt_in => cnt_in,
-            cnt => contador_salida
-        );
-
-    -- Convertir la salida del contador a BCD (ejemplo simple)
-    bcd_input <= std_logic_vector(contador_salida(3 downto 0));
-
-    -- Instancia del decodificador BCD
-    deco_inst : decoBCD  Port map (
-            bcd_in => bcd_input,
-            seg_out => seg_out
-        );
-
-   
    -- Instancia de la FSM
-   MaquinaEstados : FSM port map (clk, reset, start, stop, pause, data, address, llenado, lavado, vaciado, enjuague, centrifugado, done);
+   MaquinaEstados : FSM port map (Freq2, reset, start, stop, pause, data, address, llenado, lavado, vaciado, enjuague, centrifugado, done);
 
    -- Instancia de la ROM
-   ROM : ROMsync port map (clk, address, data);
+   ROM : ROMsync port map (Freq2, address, data);
+	
+	-- Instancia del contador
+	Frecuencia : diviFreq port map (clk, Freq1, Freq2);
+	enable <=llenado or lavado or vaciado or enjuague or centrifugado or done; --This will not work, I know
+	Temporizador : contador port map (Freq1, reset, en, load, data, display1, display2);
+	
 
 end arch_lavadora;
