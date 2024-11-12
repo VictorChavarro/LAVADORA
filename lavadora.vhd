@@ -12,7 +12,7 @@ entity lavadora is
       start : in std_logic;
       stop : in std_logic;
       pause : in std_logic;
-      buzzer : buffer std_logic
+      buzzer : buffer std_logic;
 		
 		display1	: out std_logic_vector(6 downto 0); --Decenas  
       display2	: out std_logic_vector(6 downto 0)  --Unidades
@@ -22,7 +22,8 @@ end lavadora;
 architecture arch_lavadora of lavadora is
 
    -- SEÑALES INTERNAS
-   signal Freq1, Freq2, enable, llenado, lavado, vaciado, enjuague, centrifugado, done : std_logic;	
+   signal Freq1, Freq2, llenado, lavado, vaciado, enjuague, centrifugado, done : std_logic;
+	signal enable : std_logic_vector(2 downto 0);
    signal address : std_logic_vector(3 downto 0);
    signal data : std_logic_vector(7 downto 0);
     
@@ -30,7 +31,7 @@ architecture arch_lavadora of lavadora is
    component giro
       port(        
          vuelta : in std_logic_vector(1 downto 0);
-         s : out std_logic_vector(6 downto 0)
+         s : out std_logic_vector(6 downto 0);
       );
    end component;
    
@@ -70,14 +71,19 @@ architecture arch_lavadora of lavadora is
 	
 	component contador
 		port(
-			clock, reset, en, load 	: in  std_logic;
-			cnt_in : in unsigned(6 downto 0);
+			clock, reset, load 	: in  std_logic;
+			en : in std_logic_vector(2 downto 0);
+			cnt_in : in unsigned(7 downto 0);
 			cnt	: out unsigned (6 downto 0);			
 			decenas    : out std_logic_vector(6 downto 0);  
 			unidades    : out std_logic_vector(6 downto 0)
 		);
+	end component;
     
 begin
+	-- Divisor de Frequencia
+	Frecuencia : diviFreq port map (clk, Freq1, Freq2);
+	
    -- Instancia de la FSM
    MaquinaEstados : FSM port map (Freq2, reset, start, stop, pause, data, address, llenado, lavado, vaciado, enjuague, centrifugado, done);
 
@@ -85,9 +91,20 @@ begin
    ROM : ROMsync port map (Freq2, address, data);
 	
 	-- Instancia del contador
-	Frecuencia : diviFreq port map (clk, Freq1, Freq2);
-	enable <=llenado or lavado or vaciado or enjuague or centrifugado or done; --This will not work, I know
-	Temporizador : contador port map (Freq1, reset, en, load, data, display1, display2);
+	Temporizador : contador port map (Freq1, reset, enable, load, data, , display1, display2);
+	
+	if (llenado='1')then
+		enable <= "001";
+	elsif (lavado='1') then
+		enable <= "010";
+	elsif (vaciado='1') then
+		enable <= "011";
+	elsif (enjuague<='1') then
+		enable <= "100";
+	elsif (centrifugado>='1') then
+		enable <= "101";
+	end if;		
+
 	
 
 end arch_lavadora;
