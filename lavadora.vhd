@@ -94,7 +94,7 @@ begin
    -- Instancia del contador
    Temporizador : contador port map (Freq1, reset, '0', enable, unsigned(data(6 downto 0)),  to_unsigned(cout, 7), display1, display2);
 
-   -- Lógica de habilitación
+   -- Probando hasta que funcione esto
    process (llenado, lavado, vaciado, enjuague, centrifugado)
    begin
       if (llenado = '1' and lavado = '0' and vaciado = '0' and enjuague = '0' and centrifugado = '0') then
