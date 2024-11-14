@@ -23,7 +23,8 @@ end FSM;
 architecture ARK of FSM is
    type estado_type is (INICIO, LLENADO1, LAVADO1, VACIADO1, LLENADO2, ENJUAGUE1, VACIADO2, CENTRIFUGADO1, FIN);
    signal estado, siguiente_estado : estado_type;
-   signal contador : integer := 0;
+   signal contador : integer := 0;  -- Definir `contador` como señal interna
+
 begin
 
    proceso_maquina: process(clk, reset)
@@ -42,7 +43,8 @@ begin
             when INICIO =>
                contador <= 0;
                siguiente_estado <= LLENADO1;
-               address <= "0000"; -- Dirección en la ROM para INICIO (opcional si no lo usa)
+               address <= "0000"; -- Dirección en la ROM para INICIO
+               done <= '0';       -- Reiniciar `done`
 
             when LLENADO1 =>
                address <= "0001"; -- Dirección en la ROM para LLENADO1

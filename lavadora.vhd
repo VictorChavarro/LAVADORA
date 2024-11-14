@@ -12,10 +12,12 @@ entity lavadora is
       start : in std_logic;
       stop : in std_logic;
       pause : in std_logic;
+		
       buzzer : buffer std_logic;
 		
 		display1	: out std_logic_vector(6 downto 0); --Decenas  
-      display2	: out std_logic_vector(6 downto 0)  --Unidades
+      display2	: out std_logic_vector(6 downto 0);  --Unidades
+		display3, display4 : std_logic_vector(6 downto 0) -- Velocidad y Direccion
    );
 end lavadora;
 
@@ -23,6 +25,7 @@ architecture arch_lavadora of lavadora is
 
    -- SEÑALES INTERNAS
    signal Freq1, Freq2, llenado, lavado, vaciado, enjuague, centrifugado, done : std_logic;
+	signal cout : integer;
 	signal enable : std_logic_vector(2 downto 0);
    signal address : std_logic_vector(3 downto 0);
    signal data : std_logic_vector(7 downto 0);
@@ -31,7 +34,7 @@ architecture arch_lavadora of lavadora is
    component giro
       port(        
          vuelta : in std_logic_vector(1 downto 0);
-         s : out std_logic_vector(6 downto 0);
+         s : out std_logic_vector(6 downto 0)
       );
    end component;
    
@@ -74,7 +77,7 @@ architecture arch_lavadora of lavadora is
 			clock, reset, load 	: in  std_logic;
 			en : in std_logic_vector(2 downto 0);
 			cnt_in : in unsigned(7 downto 0);
-			cnt	: out unsigned (6 downto 0);			
+			cnt	: out unsigned (6 downto 0);		--cout	
 			decenas    : out std_logic_vector(6 downto 0);  
 			unidades    : out std_logic_vector(6 downto 0)
 		);
@@ -82,28 +85,33 @@ architecture arch_lavadora of lavadora is
     
 begin
 	-- Divisor de Frequencia
-	Frecuencia : diviFreq port map (clk, Freq1, Freq2);
+	Frecuencia : diviFreq port map (clk, Freq1, Freq2); --clk, out1, out2
 	
    -- Instancia de la FSM
-   MaquinaEstados : FSM port map (Freq2, reset, start, stop, pause, data, address, llenado, lavado, vaciado, enjuague, centrifugado, done);
+   MaquinaEstados : FSM port map (Freq2, reset, start, stop, pause, data, cout, address, llenado, lavado, vaciado, enjuague, centrifugado, done);  --clk, reset, start, stop, pause, rom_data, contador, address, llenado, lavado, vaciado, enjuague, centrifugado, done
 
    -- Instancia de la ROM
    ROM : ROMsync port map (Freq2, address, data);
 	
 	-- Instancia del contador
-	Temporizador : contador port map (Freq1, reset, enable, load, data, , display1, display2);
-	
-	if (llenado='1')then
+	Temporizador : contador port map (Freq1, reset, load='0', enable, data, to_integer(unsigned(cout)), display1, display2); --clk, reset, load, en, cnt_in, cnt, decenas, unidades
+
+--Aun se esta probando si funciona esto de abajo	
+	if (llenado='1' and lavado='0' and vaciado='0' and enjuague='0' and centrifugado='0')then
 		enable <= "001";
-	elsif (lavado='1') then
+	elsif (lavado='1' and vaciado='0' and enjuague='0' and centrifugado='0') then
 		enable <= "010";
-	elsif (vaciado='1') then
+	elsif (vaciado='1' and lavado='0' and enjuague='0' and centrifugado='0') then
 		enable <= "011";
-	elsif (enjuague<='1') then
+	elsif (enjuague<='1' and lavado='0' and vaciado='0' and centrifugado='0') then
 		enable <= "100";
-	elsif (centrifugado>='1') then
+	elsif (centrifugado>='1'and lavado='0' and vaciado='0' and enjuague='0') then
 		enable <= "101";
-	end if;		
+	end if;	
+	
+	--Display para Velocidad y Direccion
+	
+	
 
 	
 
